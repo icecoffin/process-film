@@ -9,7 +9,7 @@ public struct ProcessFilm: ParsableCommand {
     var recursive = false
 
     @Argument(help: "Output directory.")
-    var outputDirectory: String?
+    var outputDirectory = "updated"
 
     public init() { }
 
@@ -22,14 +22,14 @@ public struct ProcessFilm: ParsableCommand {
 struct ProcessFilmLogic {
     private let path: String
     private let recursive: Bool
-    private var outputDirectory: String?
+    private var outputDirectory: String
 
     private let disk: Disk
     private let imageProcessor: ImageProcessor
 
     init(path: String,
          recursive: Bool,
-         outputDirectory: String?,
+         outputDirectory: String,
          disk: Disk = DefaultDisk(),
          imageProcessor: ImageProcessor = DefaultImageProcessor()) {
         self.path = path
@@ -69,7 +69,7 @@ struct ProcessFilmLogic {
 
     private func processFile(at url: URL) throws {
         do {
-            try imageProcessor.processImage(at: url, outputDirectory: outputDirectory ?? "updated")
+            try imageProcessor.processImage(at: url, outputDirectory: outputDirectory)
         }
         catch {
             print(error.localizedDescription)

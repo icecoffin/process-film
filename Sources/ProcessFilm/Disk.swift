@@ -39,5 +39,6 @@ final class DefaultDisk: Disk {
         return enumerator
             .allObjects
             .compactMap { $0 as? URL }
+            .sorted(by: { $0.path.localizedCaseInsensitiveCompare($1.path) == .orderedAscending })
     }
 }
