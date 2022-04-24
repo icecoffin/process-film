@@ -5,6 +5,9 @@ public struct ProcessFilm: ParsableCommand {
     @Argument(help: "Path to a file or a directory to convert.")
     var path: String
 
+    @Option(help: "Output format. Possible options: \(OutputFormat.allOptions).")
+    var format: OutputFormat = .square
+
     @Flag(name: .shortAndLong, help: "Search for images recursively.")
     var recursive = false
 
@@ -14,8 +17,22 @@ public struct ProcessFilm: ParsableCommand {
     public init() { }
 
     public func run() throws {
-        let logic = ProcessFilmLogic(path: path, recursive: recursive, outputDirectory: outputDirectory)
+        let logic = ProcessFilmLogic(
+            path: path,
+            outputFormat: format,
+            recursive: recursive,
+            outputDirectory: outputDirectory
+        )
         try logic.run()
+    }
+}
+
+enum OutputFormat: String, ExpressibleByArgument, CaseIterable {
+    case square
+    case story
+
+    static var allOptions: String {
+        return Self.allCases.map { $0.rawValue }.joined(separator: ", ")
     }
 }
 
@@ -28,15 +45,16 @@ struct ProcessFilmLogic {
     private let imageProcessor: ImageProcessor
 
     init(path: String,
+         outputFormat: OutputFormat,
          recursive: Bool,
          outputDirectory: String,
          disk: Disk = DefaultDisk(),
-         imageProcessor: ImageProcessor = DefaultImageProcessor()) {
+         imageProcessorFactory: ImageProcessorFactory = DefaultImageProcessorFactory()) {
         self.path = path
         self.recursive = recursive
         self.outputDirectory = outputDirectory
         self.disk = disk
-        self.imageProcessor = imageProcessor
+        self.imageProcessor = imageProcessorFactory.makeImageProcessor(for: outputFormat)
     }
 
     func run() throws {

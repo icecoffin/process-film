@@ -11,6 +11,7 @@ struct ImageMagickError: Error, LocalizedError {
 protocol ImageMagick {
     func imageSize(at url: URL) throws -> ImageSize
     func resizeImage(at url: URL, squareSide: Double, to newURL: URL)
+    func resizeImage(at url: URL, finalSize: ImageSize, contentPercentage: Double, to newURL: URL)
 }
 
 final class DefaultImageMagick: ImageMagick {
@@ -36,5 +37,11 @@ final class DefaultImageMagick: ImageMagick {
     func resizeImage(at url: URL, squareSide: Double, to newURL: URL) {
         let newSize = "\(squareSide)x\(squareSide)"
         _ = shell.run("convert \"\(url.path)\" -resize \(newSize) -background white -colorspace srgb -gravity center -extent \(newSize) \"\(newURL.path)\"")
+    }
+
+    func resizeImage(at url: URL, finalSize: ImageSize, contentPercentage: Double, to newURL: URL) {
+        let newSize = "\(finalSize.width)x\(finalSize.height)"
+        let contentSize = "\(round(finalSize.width * contentPercentage))x\(round(finalSize.height * contentPercentage))"
+        _ = shell.run("convert \"\(url.path)\" -resize \(contentSize) -background white -colorspace srgb -gravity center -extent \(newSize) \"\(newURL.path)\"")
     }
 }

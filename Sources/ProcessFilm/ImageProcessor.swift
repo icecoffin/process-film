@@ -21,11 +21,14 @@ final class DefaultImageProcessor: ImageProcessor {
         static let ratioTolerance = 0.01
     }
 
+    private let resizingStrategy: ImageResizingStrategy
     private let disk: Disk
     private let imageMagick: ImageMagick
 
-    init(disk: Disk = DefaultDisk(),
+    init(resizingStrategy: ImageResizingStrategy = SquareImageResizingStrategy(),
+         disk: Disk = DefaultDisk(),
          imageMagick: ImageMagick = DefaultImageMagick()) {
+        self.resizingStrategy = resizingStrategy
         self.disk = disk
         self.imageMagick = imageMagick
     }
@@ -47,8 +50,6 @@ final class DefaultImageProcessor: ImageProcessor {
     }
 
     func processImage(at url: URL, outputDirectory: String) throws {
-        let imageMagick = DefaultImageMagick()
-
         let imageSize: ImageSize
         do {
             imageSize = try imageMagick.imageSize(at: url)
@@ -67,10 +68,11 @@ final class DefaultImageProcessor: ImageProcessor {
             )
         }
 
-        imageMagick.resizeImage(
+        resizingStrategy.resizeImage(
             at: url,
-            squareSide: imageSize.biggerSide,
-            to: try updatedImageURL(for: url, outputDirectory: outputDirectory)
+            size: imageSize,
+            to: try updatedImageURL(for: url, outputDirectory: outputDirectory),
+            using: imageMagick
         )
     }
 }
